@@ -73,4 +73,5 @@ dependencies {
     kapt("com.github.MatrixDev.Roomigrant:RoomigrantCompiler:0.3.4")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    implementation(files("src/main/libs/libcore.aar"))
 }
