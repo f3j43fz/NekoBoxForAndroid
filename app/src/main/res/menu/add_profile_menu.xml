@@ -46,6 +46,9 @@
                         android:id="@+id/action_new_trojan_go"
                         android:title="@string/action_trojan_go" />
                     <item
+                        android:id="@+id/action_new_mieru"
+                        android:title="@string/action_mieru" />
+                    <item
                         android:id="@+id/action_new_naive"
                         android:title="@string/action_naive" />
                     <item
@@ -83,6 +86,9 @@
         android:title=""
         app:showAsAction="always">
         <menu>
+            <item
+                android:id="@+id/action_update_subscription"
+                android:title="@string/update_current_subscription" />
             <item
                 android:id="@+id/action_clear_traffic_statistics"
                 android:title="@string/clear_traffic_statistics" />

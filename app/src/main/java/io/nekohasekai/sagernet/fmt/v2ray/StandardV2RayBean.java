@@ -14,7 +14,7 @@ public abstract class StandardV2RayBean extends AbstractBean {
 
     //////// End of VMess & VLESS ////////
 
-    // "V2Ray Transport" tcp/http/ws/quic/grpc
+    // "V2Ray Transport" tcp/http/ws/quic/grpc/httpUpgrade
     public String type;
 
     public String host;
@@ -48,6 +48,16 @@ public abstract class StandardV2RayBean extends AbstractBean {
 
     public String certificates;
 
+    // --------------------------------------- ech
+
+    public Boolean enableECH;
+
+    public Boolean enablePqSignature;
+
+    public Boolean disabledDRS;
+
+    public String echConfig;
+
     // --------------------------------------- //
 
     public Integer packetEncoding; // 1:packet 2:xudp
@@ -60,6 +70,8 @@ public abstract class StandardV2RayBean extends AbstractBean {
 
         if (JavaUtil.isNullOrBlank(type)) type = "tcp";
         else if ("h2".equals(type)) type = "http";
+
+        type = type.toLowerCase();
 
         if (JavaUtil.isNullOrBlank(host)) host = "";
         if (JavaUtil.isNullOrBlank(path)) path = "";
@@ -84,13 +96,17 @@ public abstract class StandardV2RayBean extends AbstractBean {
 
         if (realityPubKey == null) realityPubKey = "";
         if (realityShortId == null) realityShortId = "";
+
+        if (enableECH == null) enableECH = false;
+        if (JavaUtil.isNullOrBlank(echConfig)) echConfig = "";
+        if (enablePqSignature == null) enablePqSignature = false;
+        if (disabledDRS == null) disabledDRS = false;
     }
 
     @Override
     public void serialize(ByteBufferOutput output) {
-        output.writeInt(0);
+        output.writeInt(1);
         super.serialize(output);
-
         output.writeString(uuid);
         output.writeString(encryption);
         if (this instanceof VMessBean) {
@@ -118,6 +134,11 @@ public abstract class StandardV2RayBean extends AbstractBean {
             case "grpc": {
                 output.writeString(path);
             }
+            case "httpupgrade": {
+                output.writeString(host);
+                output.writeString(path);
+
+            }
         }
 
         output.writeString(security);
@@ -129,6 +150,13 @@ public abstract class StandardV2RayBean extends AbstractBean {
             output.writeString(utlsFingerprint);
             output.writeString(realityPubKey);
             output.writeString(realityShortId);
+        }
+
+        output.writeBoolean(enableECH);
+        if (enableECH) {
+            output.writeBoolean(enablePqSignature);
+            output.writeBoolean(disabledDRS);
+            output.writeString(echConfig);
         }
 
         output.writeInt(packetEncoding);
@@ -165,6 +193,10 @@ public abstract class StandardV2RayBean extends AbstractBean {
             case "grpc": {
                 path = input.readString();
             }
+            case "httpupgrade": {
+                host = input.readString();
+                path = input.readString();
+            }
         }
 
         security = input.readString();
@@ -178,6 +210,34 @@ public abstract class StandardV2RayBean extends AbstractBean {
             realityShortId = input.readString();
         }
 
+        if (version >= 1) { // 从老版本升级上来
+            enableECH = input.readBoolean();
+            if (enableECH) {
+                enablePqSignature = input.readBoolean();
+                disabledDRS = input.readBoolean();
+                echConfig = input.readString();
+            }
+        }
+
+        if (version == 0) {
+            // 从老版本升级上来但是 version == 0, 可能有 enableECH 也可能没有，需要做判断
+            int position = input.getByteBuffer().position(); // 当前位置
+
+            boolean tmpEnableECH = input.readBoolean();
+            int tmpPacketEncoding = input.readInt();
+
+            input.setPosition(position); // 读后归位
+
+            if (tmpPacketEncoding != 1 && tmpPacketEncoding != 2) {
+                enableECH = tmpEnableECH;
+                if (enableECH) {
+                    enablePqSignature = input.readBoolean();
+                    disabledDRS = input.readBoolean();
+                    echConfig = input.readString();
+                }
+            } // 否则后一位就是 packetEncoding
+        }
+
         packetEncoding = input.readInt();
     }
 
@@ -188,6 +248,9 @@ public abstract class StandardV2RayBean extends AbstractBean {
         bean.allowInsecure = allowInsecure;
         bean.utlsFingerprint = utlsFingerprint;
         bean.packetEncoding = packetEncoding;
+        bean.enableECH = enableECH;
+        bean.disabledDRS = disabledDRS;
+        bean.echConfig = echConfig;
     }
 
     public boolean isVLESS() {

@@ -311,7 +311,7 @@ fun buildSingBoxOutboundHysteriaBean(bean: HysteriaBean): MutableMap<String, Any
                 if (bean.caText.isNotBlank()) {
                     certificate = bean.caText
                 }
-                insecure = bean.allowInsecure
+                insecure = bean.allowInsecure || DataStore.globalAllowInsecure
                 enabled = true
             }
         }.asMap()
@@ -323,9 +323,9 @@ fun buildSingBoxOutboundHysteriaBean(bean: HysteriaBean): MutableMap<String, Any
             if (port != null) {
                 server_port = port
             } else {
-//                hop_ports = bean.serverPorts
+                hop_ports = bean.serverPorts
             }
-//            hop_interval = bean.hopInterval
+            hop_interval = bean.hopInterval
             up_mbps = bean.uploadMbps
             down_mbps = bean.downloadMbps
             if (bean.obfuscation.isNotBlank()) {
@@ -350,7 +350,7 @@ fun buildSingBoxOutboundHysteriaBean(bean: HysteriaBean): MutableMap<String, Any
                 if (bean.caText.isNotBlank()) {
                     certificate = bean.caText
                 }
-                insecure = bean.allowInsecure
+                insecure = bean.allowInsecure || DataStore.globalAllowInsecure
                 enabled = true
             }
         }.asMap()

@@ -82,7 +82,8 @@ func NewSingBoxInstance(config string) (b *BoxInstance, err error) {
 
 	// create box
 	ctx, cancel := context.WithCancel(context.Background())
-	sleepManager := pause.NewDefaultManager(ctx)
+	sleepManager := pause.ManagerFromContext(ctx)
+	//sleepManager := pause.NewDefaultManager(ctx)
 	ctx = pause.ContextWithManager(ctx, sleepManager)
 	instance, err := boxbox.New(boxbox.Options{
 		Options:           options,
@@ -117,10 +118,6 @@ func NewSingBoxInstance(config string) (b *BoxInstance, err error) {
 
 func (b *BoxInstance) Start() (err error) {
 	defer device.DeferPanicToError("box.Start", func(err_ error) { err = err_ })
-
-	if outdated != "" {
-		return errors.New(outdated)
-	}
 
 	if b.state == 0 {
 		b.state = 1
