@@ -72,3 +72,9 @@ jobs:
         with:
           name: APKs
           path: ${{ env.APK }}
+      - name: Upload Libcore AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcore
+          path: app/libs/libcore.aar
+
